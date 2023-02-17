@@ -14,6 +14,7 @@ namespace Battleships.Core.Services
   public interface IBattleshipService
   {
     void Init();
+    HitResult Hit(string coordinates);
     string GetPointGridString();
     string GetLegendInfo();
     IEnumerable<PointResult> GetPointsResult();
