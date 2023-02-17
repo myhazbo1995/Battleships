@@ -15,8 +15,8 @@ namespace Battleships.Core.Models.Dtos
       PointState = pointState;
     }
 
-    public int X { get; private set; }
-    public int Y { get; private set; }
-    public PointState PointState { get; private set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public PointState PointState { get; set; }
   }
 }
