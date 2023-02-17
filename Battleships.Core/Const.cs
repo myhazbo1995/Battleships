@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Battleships.Core
 {
-  public class Const
+  internal class Const
   {
-    public static string NotHit = "_ ";
-    public static string Missed = "O ";
-    public static string Injured = "* ";
-    public static string Destroyed = "X ";
+    internal static string NotHit = "_ ";
+    internal static string Missed = "O ";
+    internal static string Injured = "* ";
+    internal static string Destroyed = "X ";
 
-    public static char[] Letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' };
-    public static short ColsAmount = 10;
+    internal static char[] Letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' };
+    internal static short ColsAmount = 10;
   }
 }
