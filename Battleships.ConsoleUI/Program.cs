@@ -10,6 +10,7 @@ var serviceProvider = new ServiceCollection()
 var battleshipService = serviceProvider.GetService<IBattleshipService>();
 
 battleshipService.Init();
+battleshipService.GenerateShips();
 Print();
 
 void Print()

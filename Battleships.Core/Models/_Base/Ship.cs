@@ -2,11 +2,11 @@
 {
   internal abstract class Ship
   {
-    private readonly List<Point> _points;
+    internal readonly Point[] Points;
 
-    internal Ship(List<Point> points)
+    public Ship(int shipSize)
     {
-      _points = points ?? new List<Point>();
+      Points = new Point[shipSize];
     }
 
     // to be considered if needed in derived class
@@ -15,8 +15,14 @@
     internal void Hit()
     {
       // It is better to use Any instead of All due to performance
-      if (_points.Any(x => !x.Hit))
-        _points.ForEach(p => p.MarkAsDestroyed());
+      if (Points.Any(x => !x.Hit))
+        Array.ForEach(Points, p => p.MarkAsDestroyed());
+    }
+
+    internal void Assign(int index, Point point)
+    {
+      Points[index] = point;
+      point.MarkAsAssigned();
     }
   }
 }

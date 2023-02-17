@@ -19,8 +19,8 @@
 
     }
 
-    //public int X => _x;
-    //public int Y => _y;
+    public int X => _x;
+    public int Y => _y;
     internal bool Hit => _hit;
     internal bool IsAssignedToShip => _isAssignedToShip;
     internal PointState PointState => _pointState;
@@ -36,14 +36,9 @@
       return true;
     }
 
-    internal bool TryAssign()
+    internal void MarkAsAssigned()
     {
-      if (_isAssignedToShip)
-        return false;
-
       _isAssignedToShip = true;
-
-      return true;
     }
 
     internal void MarkAsDestroyed()

@@ -14,6 +14,7 @@ namespace Battleships.Core.Services
   public interface IBattleshipService
   {
     void Init();
+    void GenerateShips();
     HitResult Hit(string coordinates);
     string GetPointGridString();
     string GetLegendInfo();
@@ -21,8 +22,10 @@ namespace Battleships.Core.Services
   }
   public class BattleshipService : IBattleshipService
   {
-    private readonly Point[,] points = new Point[Const.ColsAmount, Const.ColsAmount];
-    private readonly Dictionary<int, Ship> shipPointsDictionary = new();
+    private readonly Point[,] _points = new Point[Const.ColsAmount, Const.ColsAmount];
+    private readonly Dictionary<int, Ship> _shipPointsDictionary = new();
+    private readonly Random _random = new Random();
+    private readonly List<DirectionType> _directions = Enum.GetValues<DirectionType>().ToList();
 
     public void Init()
     {
@@ -32,10 +35,43 @@ namespace Battleships.Core.Services
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
+          _points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
         }
         rowIndex++;
       }
+    }
+
+    public void GenerateShips()
+    {
+      Battleship battleship = new Battleship();
+      Destroyer destroyer1 = new Destroyer();
+      Destroyer destroyer2 = new Destroyer();
+
+      Point battleshipStartingPoint;
+      do
+      {
+        battleshipStartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+      }
+      while (!TryGenerateShip(battleshipStartingPoint, new List<Point>(), battleship));
+
+      foreach(var point in battleship.Points)
+      {
+        
+      }
+
+      Point destroyer1StartingPoint;
+      do
+      {
+        destroyer1StartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+      }
+      while (!TryGenerateShip(destroyer1StartingPoint, battleship.Points.ToList(), destroyer1));
+
+      Point destroyer2StartingPoint;
+      do
+      {
+        destroyer2StartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+      }
+      while (!TryGenerateShip(destroyer2StartingPoint, battleship.Points.Concat(destroyer1.Points).ToList(), destroyer2));
     }
 
     public HitResult Hit(string coordinates)
@@ -49,7 +85,7 @@ namespace Battleships.Core.Services
       if (!result.IsSuccess)
         return result;
 
-      var point = points[validationResult.X - 1, validationResult.Y - 1];
+      var point = _points[validationResult.X - 1, validationResult.Y - 1];
 
       if (!point.TryHit())
       {
@@ -60,7 +96,7 @@ namespace Battleships.Core.Services
 
       if(point.IsAssignedToShip)
       {
-        var ship = shipPointsDictionary[point.GetHashCode()];
+        var ship = _shipPointsDictionary[point.GetHashCode()];
         ship.Hit();
       }
 
@@ -75,7 +111,7 @@ namespace Battleships.Core.Services
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          yield return new PointResult(rowIndex, i, points[rowIndex, i].PointState);
+          yield return new PointResult(rowIndex, i, _points[rowIndex, i].PointState);
         }
         rowIndex++;
       }
@@ -100,7 +136,7 @@ namespace Battleships.Core.Services
 
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          sb.Append(points[rowIndex - 1, i]);
+          sb.Append(_points[rowIndex - 1, i]);
         }
 
         sb.Append(Environment.NewLine);
@@ -134,5 +170,115 @@ namespace Battleships.Core.Services
 
       return new (x, y, HitErrorType.None);
     }
+
+    internal virtual bool TryGenerateShip(Point startPoint, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
+    {
+      if (pointsOccupiedByOtherGroups.Contains(startPoint))
+        return false;
+
+      var tempDirections = new List<DirectionType>(_directions);
+      //First of all try to pick direction automatically
+      DirectionType direction = (DirectionType)_random.Next(0, 4);
+
+      while (tempDirections.Count > 0)
+      {
+        // once automatically picked direction is not fitting - pick sequentially
+        if (tempDirections.Count < 4)
+          direction = tempDirections.First();
+
+        if (TryGeneratePoints(startPoint, direction, pointsOccupiedByOtherGroups, shipToGenerate))
+          return true;
+
+        tempDirections.Remove(direction);
+      }
+
+      return false;
+    }
+
+    internal virtual bool TryGeneratePoints(Point startPoint, DirectionType direction, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
+    {
+      int newX = startPoint.X;
+      int newY = startPoint.Y;
+      for (int i = 0; i < shipToGenerate.Points.Length - 1; i++)
+      {
+        if (direction == DirectionType.Up)
+        {
+          newY--;
+
+          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
+            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+            return false;
+        }
+        else if (direction == DirectionType.Down)
+        {
+          newY++;
+
+          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+             pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
+             pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+            return false;
+        }
+        else if (direction == DirectionType.Left)
+        {
+          newX--;
+
+          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
+            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+            return false;
+        }
+        else if (direction == DirectionType.Right)
+        {
+          newX++;
+
+          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
+            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+            return false;
+        }
+      }
+
+      for (int i = 0; i < shipToGenerate.Points.Length - 1; i++)
+      {
+        if (direction == DirectionType.Up)
+        {
+          var point = _points[newX, newY + i];
+          shipToGenerate.Assign(i, point);
+          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+        }
+        else if (direction == DirectionType.Down)
+        {
+          var point = _points[newX, newY - i];
+          shipToGenerate.Assign(i, point);
+          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+        }
+        else if (direction == DirectionType.Left)
+        {
+          var point = _points[newX + i, newY];
+          shipToGenerate.Assign(i, point);
+          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+        }
+        else if (direction == DirectionType.Right)
+        {
+          var point = _points[newX - i, newY];
+          shipToGenerate.Assign(i, point);
+          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+        }
+
+        shipToGenerate.Assign(shipToGenerate.Points.Length - 1, startPoint);
+        _shipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
+      }
+
+      return true;
+    }
+  }
+
+  internal enum DirectionType : int
+  {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3,
   }
 }
