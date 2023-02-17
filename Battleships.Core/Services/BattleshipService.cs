@@ -50,21 +50,21 @@ namespace Battleships.Core.Services
       Point battleshipStartingPoint;
       do
       {
-        battleshipStartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+        battleshipStartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
       }
       while (!TryGenerateShip(battleshipStartingPoint, new List<Point>(), battleship));
 
       Point destroyer1StartingPoint;
       do
       {
-        destroyer1StartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+        destroyer1StartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
       }
       while (!TryGenerateShip(destroyer1StartingPoint, battleship.Points.ToList(), destroyer1));
 
       Point destroyer2StartingPoint;
       do
       {
-        destroyer2StartingPoint = _points[_random.Next(0, Const.ColsAmount - 1), _random.Next(0, Const.ColsAmount - 1)];
+        destroyer2StartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
       }
       while (!TryGenerateShip(destroyer2StartingPoint, battleship.Points.Concat(destroyer1.Points).ToList(), destroyer2));
     }
@@ -156,12 +156,12 @@ namespace Battleships.Core.Services
 
       char xC = coordinates[0];
 
-      int y = int.Parse(coordinates.Substring(1));
+      int x = int.Parse(coordinates.Substring(1));
 
-      if (y < 1 || y > Const.ColsAmount || !Const.Letters.Contains(xC))
+      if (x < 1 || x > Const.ColsAmount || !Const.Letters.Contains(xC))
         return new(0, 0, HitErrorType.OutOfRange);
 
-      int x = Array.IndexOf(Const.Letters, xC) + 1;
+      int y = Array.IndexOf(Const.Letters, xC) + 1;
 
       return new (x, y, HitErrorType.None);
     }
@@ -200,7 +200,7 @@ namespace Battleships.Core.Services
         {
           newY--;
 
-          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
             pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
             pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
             return false;
@@ -209,16 +209,16 @@ namespace Battleships.Core.Services
         {
           newY++;
 
-          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
-             pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
-             pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
+            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
+            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
             return false;
         }
         else if (direction == DirectionType.Left)
         {
           newX--;
 
-          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
             pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
             pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
             return false;
@@ -227,7 +227,7 @@ namespace Battleships.Core.Services
         {
           newX++;
 
-          if (newX < 0 || newY < 0 || newX > Const.ColsAmount - 1 || newY > Const.ColsAmount - 1 ||
+          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
             pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
             pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
             return false;
@@ -238,32 +238,32 @@ namespace Battleships.Core.Services
       {
         if (direction == DirectionType.Up)
         {
-          var point = _points[newX, newY + i];
+          var point = _points[newX - 1, newY + i - 1];
           shipToGenerate.Assign(i, point);
           _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Down)
         {
-          var point = _points[newX, newY - i];
+          var point = _points[newX - 1, newY - i - 1];
           shipToGenerate.Assign(i, point);
           _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Left)
         {
-          var point = _points[newX + i, newY];
+          var point = _points[newX + i - 1, newY - 1];
           shipToGenerate.Assign(i, point);
           _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Right)
         {
-          var point = _points[newX - i, newY];
+          var point = _points[newX - i - 1, newY - 1];
           shipToGenerate.Assign(i, point);
           _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
-
-        shipToGenerate.Assign(shipToGenerate.Points.Length - 1, startPoint);
-        _shipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
       }
+
+      shipToGenerate.Assign(shipToGenerate.Points.Length - 1, startPoint);
+      _shipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
 
       return true;
     }
