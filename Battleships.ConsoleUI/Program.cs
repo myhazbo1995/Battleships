@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Battleships.Core.Models.Dtos;
 using Battleships.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,17 +12,42 @@ var battleshipService = serviceProvider.GetService<IBattleshipService>();
 battleshipService.Init();
 battleshipService.GenerateShips();
 
-for (int i = 1; i <= 10; i++)
+HitResult hitResult = new HitResult();
+
+Print();
+
+while (!hitResult.GameOver)
 {
-  for (char y = 'A'; y <= 'J'; y++)
+  Console.WriteLine("Try hit");
+  var coordinates = Console.ReadLine();
+
+  hitResult = battleshipService.Hit(coordinates);
+
+  if (hitResult.IsSuccess)
   {
-    battleshipService.Hit($"{y}{i}");
     Print();
-    Console.Read();
+
+    if (hitResult.HitSuccessType == HitSuccessType.Missed)
+      Console.WriteLine("Ooops. You missed");
+    else if (hitResult.HitSuccessType == HitSuccessType.Injured)
+      Console.WriteLine("Well done. It's an injure");
+    else if (hitResult.HitSuccessType == HitSuccessType.Destroyed)
+      Console.WriteLine("Well done. It's a destroy");
+  }
+  else
+  {
+    if (hitResult.HitErrorType == HitErrorType.NotValid)
+      Console.WriteLine("Coordinates are not valid");
+    else if (hitResult.HitErrorType == HitErrorType.OutOfRange)
+      Console.WriteLine("Coordinates are out of range");
+    else if (hitResult.HitErrorType == HitErrorType.AlreadyHit)
+      Console.WriteLine("Ooops. Already hit");
   }
 }
+
 Print();
-Console.Read();
+Console.WriteLine("GAME OVER");
+
 
 
 void Print()
