@@ -49,7 +49,7 @@ namespace Battleships.Core.Services
       if (!result.IsSuccess)
         return result;
 
-      var point = points[validationResult.X, validationResult.Y];
+      var point = points[validationResult.X - 1, validationResult.Y - 1];
 
       if (!point.TryHit())
       {
@@ -117,7 +117,22 @@ namespace Battleships.Core.Services
 
     protected virtual (int X, int Y, HitErrorType HitErrorType) ValidateCoordinates(string coordinates)
     {
-      return new (0, 0, HitErrorType.None);
+      coordinates = coordinates.ToUpper().Trim();
+      if (string.IsNullOrWhiteSpace(coordinates) || coordinates.Length < 2 || 
+        coordinates.Length > 3 || !char.IsLetter(coordinates[0]) || 
+        !char.IsDigit(coordinates[1]) || (coordinates.Length == 3 && !char.IsDigit(coordinates[2])))
+        return new(0, 0, HitErrorType.NotValid);
+
+      char xC = coordinates[0];
+
+      int y = int.Parse(coordinates.Substring(1));
+
+      if (y < 1 || y > Const.ColsAmount || !Const.Letters.Contains(xC))
+        return new(0, 0, HitErrorType.OutOfRange);
+
+      int x = Array.IndexOf(Const.Letters, xC) + 1;
+
+      return new (x, y, HitErrorType.None);
     }
   }
 }
