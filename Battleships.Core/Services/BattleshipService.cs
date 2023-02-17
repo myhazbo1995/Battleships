@@ -37,6 +37,35 @@ namespace Battleships.Core.Services
       }
     }
 
+    public HitResult Hit(string coordinates)
+    {
+      var result = new HitResult();
+
+      var validationResult = ValidateCoordinates(coordinates);
+
+      result.HitErrorType = validationResult.HitErrorType;
+
+      if (!result.IsSuccess)
+        return result;
+
+      var point = points[validationResult.X, validationResult.Y];
+
+      if (!point.TryHit())
+      {
+        result.HitErrorType = HitErrorType.AlreadyHit;
+
+        return result;
+      }
+
+      if(point.IsAssignedToShip)
+      {
+        var ship = shipPointsDictionary[point.GetHashCode()];
+        ship.Hit();
+      }
+
+      return result;
+    }
+
     public IEnumerable<PointResult> GetPointsResult()
     {
       int rowIndex = 0;
@@ -83,6 +112,11 @@ namespace Battleships.Core.Services
     public string GetLegendInfo()
     {
       return $"{Const.NotHit}- not hit; {Const.Missed}- missed; {Const.Injured}- injured; {Const.Destroyed}- destroyed.";
+    }
+
+    protected virtual (int X, int Y, HitErrorType HitErrorType) ValidateCoordinates(string coordinates)
+    {
+      return new (0, 0, HitErrorType.None);
     }
   }
 }
