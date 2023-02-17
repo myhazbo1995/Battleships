@@ -197,29 +197,33 @@ namespace Battleships.Core.Services
         {
           newY--;
 
-          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
+          if (IsGeneratedPointNotValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Down)
         {
           newY++;
 
-          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
+          if (IsGeneratedPointNotValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Left)
         {
           newX--;
 
-          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
+          if (IsGeneratedPointNotValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Right)
         {
           newX++;
 
-          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
+          if (IsGeneratedPointNotValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
+        }
+        else
+        {
+          throw new ArgumentOutOfRangeException();
         }
       }
 
@@ -262,7 +266,7 @@ namespace Battleships.Core.Services
       ShipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
     }
 
-    protected virtual bool IsGeneratedPointValid(int x, int y, List<Point> pointsOccupiedByOtherGroups)
+    protected virtual bool IsGeneratedPointNotValid(int x, int y, List<Point> pointsOccupiedByOtherGroups)
     {
       return x < 1 || y < 1 || 
         x > Const.ColsAmount || y > Const.ColsAmount ||
