@@ -1,5 +1,4 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Text;
 using Battleships.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +10,19 @@ var battleshipService = serviceProvider.GetService<IBattleshipService>();
 
 battleshipService.Init();
 battleshipService.GenerateShips();
+
+for (int i = 1; i <= 10; i++)
+{
+  for (char y = 'A'; y <= 'J'; y++)
+  {
+    battleshipService.Hit($"{y}{i}");
+    Print();
+    Console.Read();
+  }
+}
 Print();
+Console.Read();
+
 
 void Print()
 {

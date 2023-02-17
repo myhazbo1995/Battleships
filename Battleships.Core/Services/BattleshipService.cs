@@ -54,11 +54,6 @@ namespace Battleships.Core.Services
       }
       while (!TryGenerateShip(battleshipStartingPoint, new List<Point>(), battleship));
 
-      foreach(var point in battleship.Points)
-      {
-        
-      }
-
       Point destroyer1StartingPoint;
       do
       {
