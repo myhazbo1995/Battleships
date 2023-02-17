@@ -16,10 +16,11 @@ namespace Battleships.Core.Services
   }
   public class BattleshipService : IBattleshipService
   {
-    private readonly Point[,] _points = new Point[Const.ColsAmount, Const.ColsAmount];
-    private readonly Dictionary<int, Ship> _shipPointsDictionary = new();
     private readonly Random _random = new Random();
     private readonly List<DirectionType> _directions = Enum.GetValues<DirectionType>().ToList();
+
+    protected readonly Point[,] Points = new Point[Const.ColsAmount, Const.ColsAmount];
+    protected readonly Dictionary<int, Ship> ShipPointsDictionary = new();
 
     public void Init()
     {
@@ -29,7 +30,7 @@ namespace Battleships.Core.Services
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          _points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
+          Points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
         }
         rowIndex++;
       }
@@ -58,7 +59,7 @@ namespace Battleships.Core.Services
       if (!result.IsSuccess)
         return result;
 
-      var point = _points[validationResult.X - 1, validationResult.Y - 1];
+      var point = Points[validationResult.X - 1, validationResult.Y - 1];
 
       if (!point.TryHit())
       {
@@ -69,13 +70,13 @@ namespace Battleships.Core.Services
 
       if (point.IsAssignedToShip)
       {
-        var ship = _shipPointsDictionary[point.GetHashCode()];
+        var ship = ShipPointsDictionary[point.GetHashCode()];
         ship.Hit();
 
         result.HitSuccessType = point.GetHitSuccessType();
 
         // For performance improvement there has been used Any instead of All
-        if (!_shipPointsDictionary.Values.Any(x => x.Points.Any(x => !x.Hit)))
+        if (!ShipPointsDictionary.Values.Any(x => x.Points.Any(x => !x.Hit)))
         {
           result.GameOver = true;
         }
@@ -92,7 +93,7 @@ namespace Battleships.Core.Services
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          yield return new PointResult(rowIndex, i, _points[rowIndex, i].PointState);
+          yield return new PointResult(rowIndex, i, Points[rowIndex, i].PointState);
         }
         rowIndex++;
       }
@@ -117,7 +118,7 @@ namespace Battleships.Core.Services
 
         for (int i = 0; i < Const.ColsAmount; i++)
         {
-          sb.Append(_points[rowIndex - 1, i]);
+          sb.Append(Points[rowIndex - 1, i]);
         }
 
         sb.Append(Environment.NewLine);
@@ -152,17 +153,17 @@ namespace Battleships.Core.Services
       return new(x, y, HitErrorType.None);
     }
 
-    internal virtual void GenerateShip(Ship ship, List<Point> pointsToAvoid)
+    protected virtual void GenerateShip(Ship ship, List<Point> pointsToAvoid)
     {
       Point startingPoint;
       do
       {
-        startingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
+        startingPoint = Points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
       }
       while (!TryGenerateShip(startingPoint, pointsToAvoid, ship));
     }
 
-    internal virtual bool TryGenerateShip(Point startPoint, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
+    protected virtual bool TryGenerateShip(Point startPoint, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
     {
       if (pointsOccupiedByOtherGroups.Contains(startPoint))
         return false;
@@ -186,7 +187,7 @@ namespace Battleships.Core.Services
       return false;
     }
 
-    internal virtual bool TryGeneratePoints(Point startPoint, DirectionType direction, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
+    protected virtual bool TryGeneratePoints(Point startPoint, DirectionType direction, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
     {
       int newX = startPoint.X;
       int newY = startPoint.Y;
@@ -227,41 +228,41 @@ namespace Battleships.Core.Services
       return true;
     }
 
-    private void AssignGeneratedPointsToShip(Point startPoint, DirectionType direction, Ship shipToGenerate, int newX, int newY)
+    protected virtual void AssignGeneratedPointsToShip(Point startPoint, DirectionType direction, Ship shipToGenerate, int newX, int newY)
     {
       for (int i = 0; i < shipToGenerate.Points.Length - 1; i++)
       {
         if (direction == DirectionType.Up)
         {
-          var point = _points[newX - 1, newY + i - 1];
+          var point = Points[newX - 1, newY + i - 1];
           shipToGenerate.Assign(i, point);
-          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+          ShipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Down)
         {
-          var point = _points[newX - 1, newY - i - 1];
+          var point = Points[newX - 1, newY - i - 1];
           shipToGenerate.Assign(i, point);
-          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+          ShipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Left)
         {
-          var point = _points[newX + i - 1, newY - 1];
+          var point = Points[newX + i - 1, newY - 1];
           shipToGenerate.Assign(i, point);
-          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+          ShipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
         else if (direction == DirectionType.Right)
         {
-          var point = _points[newX - i - 1, newY - 1];
+          var point = Points[newX - i - 1, newY - 1];
           shipToGenerate.Assign(i, point);
-          _shipPointsDictionary[point.GetHashCode()] = shipToGenerate;
+          ShipPointsDictionary[point.GetHashCode()] = shipToGenerate;
         }
       }
 
       shipToGenerate.Assign(shipToGenerate.Points.Length - 1, startPoint);
-      _shipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
+      ShipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
     }
 
-    private bool IsGeneratedPointValid(int x, int y, List<Point> pointsOccupiedByOtherGroups)
+    protected virtual bool IsGeneratedPointValid(int x, int y, List<Point> pointsOccupiedByOtherGroups)
     {
       return x < 1 || y < 1 || 
         x > Const.ColsAmount || y > Const.ColsAmount ||
@@ -270,7 +271,7 @@ namespace Battleships.Core.Services
     }
   }
 
-  internal enum DirectionType : int
+  public enum DirectionType : int
   {
     Up = 0,
     Down = 1,

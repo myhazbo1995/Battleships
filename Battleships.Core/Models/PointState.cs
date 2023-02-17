@@ -1,6 +1,6 @@
 ﻿namespace Battleships.Core.Models
 {
-  public enum PointState
+  public enum PointState : int
   {
     NotHit,
     Missed,

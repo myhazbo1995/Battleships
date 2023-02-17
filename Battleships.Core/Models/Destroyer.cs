@@ -1,8 +1,8 @@
 ﻿namespace Battleships.Core.Models
 {
-  internal class Destroyer : Ship
+  public class Destroyer : Ship
   {
-    internal Destroyer()
+    public Destroyer()
       : base(4)
     {
     }

@@ -1,14 +1,14 @@
 ﻿
 namespace Battleships.Core
 {
-  internal class Const
+  public class Const
   {
-    internal static string NotHit = "_ ";
-    internal static string Missed = "O ";
-    internal static string Injured = "* ";
-    internal static string Destroyed = "X ";
+    public readonly static string NotHit = "_ ";
+    public readonly static string Missed = "O ";
+    public readonly static string Injured = "* ";
+    public readonly static string Destroyed = "X ";
 
-    internal static char[] Letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' };
-    internal static short ColsAmount = 10;
+    public readonly static char[] Letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' };
+    public readonly static short ColsAmount = 10;
   }
 }

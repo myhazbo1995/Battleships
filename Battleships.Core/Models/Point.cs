@@ -1,6 +1,6 @@
 ﻿namespace Battleships.Core.Models
 {
-  class Point
+  public class Point
   {
     private readonly int _x, _y;
     private bool _hit, _isAssignedToShip;
@@ -11,7 +11,7 @@
       _pointState = PointState.NotHit;
     }
 
-    internal Point(int x, int y)
+    public Point(int x, int y)
       : this()
     {
       _x = x;
@@ -21,11 +21,11 @@
 
     public int X => _x;
     public int Y => _y;
-    internal bool Hit => _hit;
-    internal bool IsAssignedToShip => _isAssignedToShip;
-    internal PointState PointState => _pointState;
+    public bool Hit => _hit;
+    public bool IsAssignedToShip => _isAssignedToShip;
+    public PointState PointState => _pointState;
 
-    internal bool TryHit()
+    public bool TryHit()
     {
       if (_hit)
         return false;
@@ -36,12 +36,12 @@
       return true;
     }
 
-    internal void MarkAsAssigned()
+    public void MarkAsAssigned()
     {
       _isAssignedToShip = true;
     }
 
-    internal void MarkAsDestroyed()
+    public void MarkAsDestroyed()
     {
       _pointState = PointState.Destroyed;
     }

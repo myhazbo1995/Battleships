@@ -3,9 +3,9 @@ using Battleships.Core.Models.Dtos;
 
 namespace Battleships.Core.Extensions
 {
-  internal static class PointExtensions
+  public static class PointExtensions
   {
-    internal static HitSuccessType GetHitSuccessType(this Point point)
+    public static HitSuccessType GetHitSuccessType(this Point point)
     {
       if (point.PointState == PointState.Injured)
         return HitSuccessType.Injured;
