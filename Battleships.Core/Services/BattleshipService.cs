@@ -1,15 +1,7 @@
 ﻿using Battleships.Core.Extensions;
 using Battleships.Core.Models;
 using Battleships.Core.Models.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
-using Point = Battleships.Core.Models.Point;
 
 namespace Battleships.Core.Services
 {
@@ -49,26 +41,10 @@ namespace Battleships.Core.Services
       Destroyer destroyer1 = new Destroyer();
       Destroyer destroyer2 = new Destroyer();
 
-      Point battleshipStartingPoint;
-      do
-      {
-        battleshipStartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
-      }
-      while (!TryGenerateShip(battleshipStartingPoint, new List<Point>(), battleship));
 
-      Point destroyer1StartingPoint;
-      do
-      {
-        destroyer1StartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
-      }
-      while (!TryGenerateShip(destroyer1StartingPoint, battleship.Points.ToList(), destroyer1));
-
-      Point destroyer2StartingPoint;
-      do
-      {
-        destroyer2StartingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
-      }
-      while (!TryGenerateShip(destroyer2StartingPoint, battleship.Points.Concat(destroyer1.Points).ToList(), destroyer2));
+      GenerateShip(battleship, new List<Point>());
+      GenerateShip(destroyer1, battleship.Points.ToList());
+      GenerateShip(destroyer2, battleship.Points.Concat(destroyer1.Points).ToList());
     }
 
     public HitResult Hit(string coordinates)
@@ -91,13 +67,14 @@ namespace Battleships.Core.Services
         return result;
       }
 
-      if(point.IsAssignedToShip)
+      if (point.IsAssignedToShip)
       {
         var ship = _shipPointsDictionary[point.GetHashCode()];
         ship.Hit();
 
         result.HitSuccessType = point.GetHitSuccessType();
 
+        // For performance improvement there has been used Any instead of All
         if (!_shipPointsDictionary.Values.Any(x => x.Points.Any(x => !x.Hit)))
         {
           result.GameOver = true;
@@ -158,8 +135,8 @@ namespace Battleships.Core.Services
     protected virtual (int X, int Y, HitErrorType HitErrorType) ValidateCoordinates(string coordinates)
     {
       coordinates = coordinates.ToUpper().Trim();
-      if (string.IsNullOrWhiteSpace(coordinates) || coordinates.Length < 2 || 
-        coordinates.Length > 3 || !char.IsLetter(coordinates[0]) || 
+      if (string.IsNullOrWhiteSpace(coordinates) || coordinates.Length < 2 ||
+        coordinates.Length > 3 || !char.IsLetter(coordinates[0]) ||
         !char.IsDigit(coordinates[1]) || (coordinates.Length == 3 && !char.IsDigit(coordinates[2])))
         return new(0, 0, HitErrorType.NotValid);
 
@@ -172,7 +149,17 @@ namespace Battleships.Core.Services
 
       int y = Array.IndexOf(Const.Letters, xC) + 1;
 
-      return new (x, y, HitErrorType.None);
+      return new(x, y, HitErrorType.None);
+    }
+
+    internal virtual void GenerateShip(Ship ship, List<Point> pointsToAvoid)
+    {
+      Point startingPoint;
+      do
+      {
+        startingPoint = _points[_random.Next(0, Const.ColsAmount), _random.Next(0, Const.ColsAmount)];
+      }
+      while (!TryGenerateShip(startingPoint, pointsToAvoid, ship));
     }
 
     internal virtual bool TryGenerateShip(Point startPoint, List<Point> pointsOccupiedByOtherGroups, Ship shipToGenerate)
@@ -209,40 +196,39 @@ namespace Battleships.Core.Services
         {
           newY--;
 
-          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
-            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
-            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Down)
         {
           newY++;
 
-          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
-            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
-            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Left)
         {
           newX--;
 
-          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
-            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
-            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
         else if (direction == DirectionType.Right)
         {
           newX++;
 
-          if (newX < 1 || newY < 1 || newX > Const.ColsAmount || newY > Const.ColsAmount ||
-            pointsOccupiedByOtherGroups.Any(p => p.X == newX && p.Y == newY) ||
-            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - newX) <= 1 && Math.Abs(p.Y - newY) <= 1)))
+          if (!IsGeneratedPointValid(newX, newY, pointsOccupiedByOtherGroups))
             return false;
         }
       }
 
+      AssignGeneratedPointsToShip(startPoint, direction, shipToGenerate, newX, newY);
+
+      return true;
+    }
+
+    private void AssignGeneratedPointsToShip(Point startPoint, DirectionType direction, Ship shipToGenerate, int newX, int newY)
+    {
       for (int i = 0; i < shipToGenerate.Points.Length - 1; i++)
       {
         if (direction == DirectionType.Up)
@@ -273,8 +259,14 @@ namespace Battleships.Core.Services
 
       shipToGenerate.Assign(shipToGenerate.Points.Length - 1, startPoint);
       _shipPointsDictionary[startPoint.GetHashCode()] = shipToGenerate;
+    }
 
-      return true;
+    private bool IsGeneratedPointValid(int x, int y, List<Point> pointsOccupiedByOtherGroups)
+    {
+      return x < 1 || y < 1 || 
+        x > Const.ColsAmount || y > Const.ColsAmount ||
+            pointsOccupiedByOtherGroups.Any(p => p.X == x && p.Y == y) ||
+            pointsOccupiedByOtherGroups.Any(p => (Math.Abs(p.X - x) <= 1 && Math.Abs(p.Y - y) <= 1));
     }
   }
 
