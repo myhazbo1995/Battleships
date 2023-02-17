@@ -23,6 +23,7 @@
     //public int Y => _y;
     public bool Hit => _hit;
     public bool IsAssignedToShip => _isAssignedToShip;
+    public PointState PointState => _pointState;
 
     public bool TryHit()
     {
@@ -65,14 +66,6 @@
         default:
           throw new ArgumentOutOfRangeException("PointState not implemented");
       }
-    }
-
-    public enum PointState
-    {
-      NotHit,
-      Missed,
-      Injured,
-      Destroyed
     }
 
     public override int GetHashCode()

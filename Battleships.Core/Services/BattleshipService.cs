@@ -1,4 +1,5 @@
 ﻿using Battleships.Core.Models;
+using Battleships.Core.Models.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -15,11 +16,12 @@ namespace Battleships.Core.Services
     void Init();
     string GetPointGridString();
     string GetLegendInfo();
+    IEnumerable<PointResult> GetPointsResult();
   }
   public class BattleshipService : IBattleshipService
   {
-    Point[,] points = new Point[Const.ColsAmount, Const.ColsAmount];
-    Dictionary<int, Ship> shipPointsDictionary = new();
+    private readonly Point[,] points = new Point[Const.ColsAmount, Const.ColsAmount];
+    private readonly Dictionary<int, Ship> shipPointsDictionary = new();
 
     public void Init()
     {
@@ -30,6 +32,20 @@ namespace Battleships.Core.Services
         for (int i = 0; i < Const.ColsAmount; i++)
         {
           points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
+        }
+        rowIndex++;
+      }
+    }
+
+    public IEnumerable<PointResult> GetPointsResult()
+    {
+      int rowIndex = 0;
+
+      while (rowIndex < Const.ColsAmount)
+      {
+        for (int i = 0; i < Const.ColsAmount; i++)
+        {
+          yield return new PointResult(rowIndex, i, points[rowIndex, i].PointState);
         }
         rowIndex++;
       }
