@@ -11,11 +11,14 @@ namespace Battleships.Core.Models.Dtos
     public HitResult()
     {
       HitErrorType = HitErrorType.None;
+      HitSuccessType = HitSuccessType.Missed;
     }
 
     public bool IsSuccess => HitErrorType == HitErrorType.None;
+    public bool GameOver { get; set; }
 
     public HitErrorType HitErrorType { get; set; }
+    public HitSuccessType HitSuccessType { get; set; }
   }
 
   public enum HitErrorType
@@ -24,5 +27,12 @@ namespace Battleships.Core.Models.Dtos
     NotValid,
     OutOfRange,
     AlreadyHit
+  }
+
+  public enum HitSuccessType
+  {
+    Missed,
+    Injured,
+    Destroyed
   }
 }

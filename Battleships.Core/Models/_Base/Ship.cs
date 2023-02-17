@@ -15,7 +15,7 @@
     internal void Hit()
     {
       // It is better to use Any instead of All due to performance
-      if (Points.Any(x => !x.Hit))
+      if (!Points.Any(x => !x.Hit))
         Array.ForEach(Points, p => p.MarkAsDestroyed());
     }
 

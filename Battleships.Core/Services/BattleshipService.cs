@@ -1,10 +1,12 @@
-﻿using Battleships.Core.Models;
+﻿using Battleships.Core.Extensions;
+using Battleships.Core.Models;
 using Battleships.Core.Models.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Point = Battleships.Core.Models.Point;
@@ -93,6 +95,13 @@ namespace Battleships.Core.Services
       {
         var ship = _shipPointsDictionary[point.GetHashCode()];
         ship.Hit();
+
+        result.HitSuccessType = point.GetHitSuccessType();
+
+        if (!_shipPointsDictionary.Values.Any(x => x.Points.Any(x => !x.Hit)))
+        {
+          result.GameOver = true;
+        }
       }
 
       return result;
