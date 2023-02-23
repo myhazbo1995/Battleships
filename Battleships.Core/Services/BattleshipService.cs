@@ -24,15 +24,12 @@ namespace Battleships.Core.Services
 
     public void Init()
     {
-      int rowIndex = 0;
-
-      while (rowIndex < Const.ColsAmount)
+      for (int rowIndex = 0; rowIndex < Const.ColsAmount; rowIndex++)
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
           Points[rowIndex, i] = new Point(rowIndex + 1, i + 1);
         }
-        rowIndex++;
       }
     }
 
@@ -87,22 +84,18 @@ namespace Battleships.Core.Services
 
     public IEnumerable<PointResult> GetPointsResult()
     {
-      int rowIndex = 0;
-
-      while (rowIndex < Const.ColsAmount)
+      for (int rowIndex = 0; rowIndex < Const.ColsAmount; rowIndex++)
       {
         for (int i = 0; i < Const.ColsAmount; i++)
         {
           yield return new PointResult(rowIndex, i, Points[rowIndex, i].PointState);
         }
-        rowIndex++;
       }
     }
 
     public string GetPointGridString()
     {
       StringBuilder sb = new StringBuilder();
-      int rowIndex = 1;
       sb.Append("   ");
 
       for (int i = 0; i < Const.ColsAmount; i++)
@@ -112,7 +105,7 @@ namespace Battleships.Core.Services
 
       sb.Append(Environment.NewLine);
 
-      while (rowIndex <= Const.ColsAmount)
+      for (int rowIndex = 1; rowIndex <= Const.ColsAmount; rowIndex++)
       {
         sb.Append(rowIndex.ToString("D2") + " ");
 
@@ -122,7 +115,6 @@ namespace Battleships.Core.Services
         }
 
         sb.Append(Environment.NewLine);
-        rowIndex++;
       }
 
       return sb.ToString();
