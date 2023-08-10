@@ -1,72 +1,61 @@
-﻿namespace Battleships.Core.Models
+﻿using Battleships.Core.Models.Dtos;
+
+namespace Battleships.Core.Models
 {
-  public class Point
-  {
-    private readonly int _x, _y;
-    private bool _hit, _isAssignedToShip;
-    private PointState _pointState;
-
-    private Point()
+    public class Point
     {
-      _pointState = PointState.NotHit;
+        public int X { get; }
+        public int Y { get; }
+
+        public bool Hit { get; private set; }
+
+        public bool IsPointOfDestroyedShip { get; private set; }
+
+        public bool IsAssignedToShip { get; private set; }
+
+        public Point(int x, int y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public bool TryHit()
+        {
+            if (Hit)
+            {
+                return false;
+            }
+
+            Hit = true;
+
+            return true;
+        }
+
+        public void AssignToShip() => IsAssignedToShip = true;
+
+        public void MarkAsPointOfDestroyedShip() => IsPointOfDestroyedShip = true;
+
+        public override string ToString()
+        {
+            if (!Hit)
+                return Const.NotHit;
+
+            if (Hit && !IsAssignedToShip)
+                return Const.Missed;
+
+            if (Hit && IsAssignedToShip && IsPointOfDestroyedShip)
+                return Const.Destroyed;
+
+            if (Hit && IsAssignedToShip && !IsPointOfDestroyedShip)
+                return Const.Injured;
+
+            throw new Exception("Invalid point state");
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
+        }
     }
-
-    public Point(int x, int y)
-      : this()
-    {
-      _x = x;
-      _y = y;
-
-    }
-
-    public int X => _x;
-    public int Y => _y;
-    public bool Hit => _hit;
-    public bool IsAssignedToShip => _isAssignedToShip;
-    public PointState PointState => _pointState;
-
-    public bool TryHit()
-    {
-      if (_hit)
-        return false;
-
-      _hit = true;
-      _pointState = _isAssignedToShip ? PointState.Injured : PointState.Missed;
-
-      return true;
-    }
-
-    public void MarkAsAssigned()
-    {
-      _isAssignedToShip = true;
-    }
-
-    public void MarkAsDestroyed()
-    {
-      _pointState = PointState.Destroyed;
-    }
-
-    public override string ToString()
-    {
-      switch (_pointState)
-      {
-        case PointState.NotHit:
-          return Const.NotHit;
-        case PointState.Missed:
-          return Const.Missed;
-        case PointState.Injured:
-          return Const.Injured;
-        case PointState.Destroyed:
-          return Const.Destroyed;
-        default:
-          throw new ArgumentOutOfRangeException("PointState not implemented");
-      }
-    }
-
-    public override int GetHashCode()
-    {
-      return HashCode.Combine(_x, _y);
-    }
-  }
 }
 
